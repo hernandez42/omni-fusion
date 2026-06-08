@@ -18,7 +18,8 @@
     "test": "node scripts/check-install.js && npm run build-docs",
     "ci": "npm run lint && npm run test",
     "optimize": "node scripts/self-optimize.js",
-    "apex-init": "node scripts/apex-init.js"
+    "apex-init": "node scripts/apex-init.js",
+    "self-heal": "node scripts/self-heal-ci.js"
   },
   "keywords": [
     "omni-fusion",
