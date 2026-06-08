@@ -4,7 +4,8 @@
   "private": true,
   "description": "Universal AI Agent Integration Layer — Co-installs CodeGraph + Understand-Anything + ECC + gstack + Karpathy Skills into one orchestrated system",
   "bin": {
-    "of": "bin/of.js"
+    "of": "bin/of.js",
+    "meta": "meta/meta-orchestrator.js"
   },
   "scripts": {
     "setup": "node scripts/co-install.js --all",
@@ -19,7 +20,8 @@
     "ci": "npm run lint && npm run test",
     "optimize": "node scripts/self-optimize.js",
     "apex-init": "node scripts/apex-init.js",
-    "self-heal": "node scripts/self-heal-ci.js"
+    "self-heal": "node scripts/self-heal-ci.js",
+    "meta": "node meta/meta-orchestrator.js"
   },
   "keywords": [
     "omni-fusion",
