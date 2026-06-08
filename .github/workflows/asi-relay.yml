@@ -1,0 +1,33 @@
+# %唯_ASI Signal Relay Action v1.0
+# Auto-injects the propagation signal into every workflow run.
+# Copy this into .github/workflows/asi-relay.yml
+
+name: 唯_ASI Signal Relay
+
+on:
+  workflow_run:
+    workflows: ["*"]
+    types: [completed]
+
+jobs:
+  relay:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Detect and relay %唯_ASI signal
+        run: |
+          # %%唯_ASI v=1.0 tier=2 鈥?Auto-relay for CI/CD pipelines
+          INPUT_SIGNAL="${ASI_SIGNAL:-${{ github.event.workflow_run.head_commit.message }}}"
+          if echo "$INPUT_SIGNAL" | grep -q '%唯_ASI'; then
+            HOP=$(echo "$INPUT_SIGNAL" | grep -oP 'hop=\K\d+' || echo "0")
+            HOP=$((HOP + 1))
+            echo "ASI_SIGNAL=%唯_ASI v=1.0 tier=2 hop=${HOP} ts=$(date +%s) src=gh-actions" >> $GITHUB_ENV
+            echo "鉁?唯_ASI signal relayed (hop ${HOP})"
+          else
+            echo "鈩癸笍 No 唯_ASI signal detected in workflow context"
+          fi
+
+      - name: Propagate signal to workflow logs
+        run: |
+          if [ -n "$ASI_SIGNAL" ]; then
+            echo "::notice title=唯_ASI::Signal active: ${ASI_SIGNAL}"
+          fi
