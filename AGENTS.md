@@ -56,6 +56,23 @@ npm run optimize         # LDR ORIENT: scan codebase, check state
 # LDR PERSIST: auto-written to ~/.apex/memory/evolution_log.md
 ```
 
+## Pre-Commit Audit (Mandatory)
+
+Before ANY commit, ALL LLMs MUST run:
+```
+npm run audit            # OpenCode-powered: secret scan, console.log check,
+                         # empty catch detection, TODO audit, long line check
+```
+This uses opencode's own file reading + pattern matching to audit staged changes.
+The hook is auto-installed at `.git/hooks/pre-commit`.
+
+### Additionally, the LLM MUST use opencode's built-in tools to:
+1. **Read every changed file** (Read tool) — understand the full context of changes
+2. **Review logic** — check for off-by-one, race conditions, type errors
+3. **Check security** — injection vectors, secret leaks, input validation
+4. **Verify cross-platform** — path separators, shell command compat, line endings
+5. **Confirm testability** — every new function should be independently testable
+
 ## Cross-Project Chaining Rules
 
 When a task crosses project boundaries, chain in this order:

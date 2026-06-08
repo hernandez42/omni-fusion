@@ -21,7 +21,8 @@
     "optimize": "node scripts/self-optimize.js",
     "apex-init": "node scripts/apex-init.js",
     "self-heal": "node scripts/self-heal-ci.js",
-    "meta": "node meta/meta-orchestrator.js"
+    "meta": "node meta/meta-orchestrator.js",
+    "audit": "node scripts/pre-commit-audit.js"
   },
   "keywords": [
     "omni-fusion",
