@@ -356,12 +356,28 @@ async function main() {
 
   print(`\n${BOLD}${CYAN}∞ Meta-Orchestrator v1.0${RESET}`);
   print(`  ${DIM}Φ_APEX*∞ Self-Evolving Multi-LLM System${RESET}`);
+
+  // Load environment-aware tool manifest
+  let localTools = {};
+  try {
+    const manifest = JSON.parse(fs.readFileSync(path.join(ROOT, 'fuse.json'), 'utf8'));
+    localTools = manifest.tools || {};
+    const envInfo = manifest.env || {};
+    print(`  ${DIM}Node ${envInfo.node} | ${envInfo.ramGB}GB RAM${envInfo.gpu ? ' | GPU' : ''} | ${envInfo.cpus} CPUs${RESET}`);
+  } catch { print(`  ${DIM}No fuse.json manifest — run 'npm run setup' first${RESET}`); }
   print(`  ${DIM}Task: ${task}${RESET}\n`);
 
   const phi = new PhiApex();
   const router = new LLMRouter(phi);
   const executor = new TaskExecutor(phi, router);
   const analyzer = new MetaAnalyzer(phi);
+
+  // If local codegraph + code review agents exist, route code/review tasks locally
+  const hasCodeGraph = Array.isArray(localTools) && localTools.some(t => t.id === 'codegraph' && t.installed);
+  const hasECC = Array.isArray(localTools) && localTools.some(t => (t.id === 'ecc' || t.id === 'ecc-lite') && t.installed);
+  if ((hasCodeGraph || hasECC) && /code|review|audit|分析|审查/.test(task)) {
+    print(`  ${DIM}Local tools detected: using ${hasCodeGraph ? 'CodeGraph' : ''}${hasCodeGraph && hasECC ? ' + ' : ''}${hasECC ? 'ECC' : ''} for this task${RESET}`);
+  }
 
   const result = await ldrCycle(task, phi, router, executor, analyzer);
 
@@ -373,12 +389,17 @@ async function main() {
   print(`  Complexity: ${result.selection.complexity}/10`);
   print(`  Records: ~/.apex/memory/evolution_log.md`);
 
-  // Generate next-action suggestions
+  // Generate environment-specific suggestions
   print(`\n${BOLD}${CYAN}Next Suggestions${RESET}`);
-  print(`  ${DIM}1. Set OPENROUTER_API_KEY to enable real LLM calls${RESET}`);
-  print(`  ${DIM}2. Add more LLM profiles to LLM_PROFILES${RESET}`);
-  print(`  ${DIM}3. Run again with a real problem to solve${RESET}`);
-  print(`  ${DIM}4. Extend router with confidence-weighted selection${RESET}\n`);
+  if (!process.env.OPENROUTER_API_KEY && !process.env.OPENAI_API_KEY) {
+    print(`  ${DIM}1. Set OPENROUTER_API_KEY to enable real multi-LLM calls${RESET}`);
+    print(`  ${DIM}2. npm run setup  — detect environment + auto-install more tools${RESET}`);
+  } else {
+    print(`  ${DIM}1. meta "<your next task>"  — solve any problem${RESET}`);
+    print(`  ${DIM}2. npm run optimize          — run LDR evolution cycle${RESET}`);
+  }
+  print(`  ${DIM}3. of status  — check installed components${RESET}`);
+  print(`  ${DIM}4. Φ_APEX*∞ = ${result.phi.new.toFixed(6)} — keep evolving${RESET}\n`);
 }
 
 main().catch(e => { console.error(e.message || e); process.exitCode = 1; });

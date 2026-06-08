@@ -1,76 +1,51 @@
 {
-  "version": "1.0.0",
-  "name": "omni-fusion",
-  "projects": {
-    "codegraph": {
-      "repo": "colbymchenry/codegraph",
-      "npm": "@colbymchenry/codegraph",
-      "install": "npm install -g @colbymchenry/codegraph",
-      "configDir": ".codegraph/",
-      "version": "0.9.9"
+  "version": "2.0",
+  "installedAt": "2026-06-08T06:27:44.532Z",
+  "env": {
+    "os": "win32",
+    "arch": "x64",
+    "cpus": 4,
+    "ramGB": 20,
+    "gpu": false,
+    "node": null
+  },
+  "tools": [
+    {
+      "id": "omni-fusion",
+      "description": "Meta-Orchestrator + CLI + self-evolution",
+      "installed": false,
+      "source": "local"
     },
-    "understand-anything": {
-      "repo": "Lum1104/Understand-Anything",
-      "plugin": "understand-anything",
-      "install": "/plugin install understand-anything",
-      "configDir": ".understand-anything/",
-      "version": "latest"
+    {
+      "id": "codegraph",
+      "description": "AST knowledge graph (fast code indexing)",
+      "installed": false,
+      "source": "@colbymchenry/codegraph"
     },
-    "ecc": {
-      "repo": "affaan-m/ECC",
-      "npm": "ecc-universal",
-      "install": "npm install -g ecc-universal && ecc install --profile developer --target claude",
-      "configDir": "~/.claude/",
-      "version": "1.10.0"
+    {
+      "id": "ecc-lite",
+      "description": "Code review agents (cloud mode)",
+      "installed": false,
+      "source": "ecc-universal"
     },
-    "gstack": {
-      "repo": "garrytan/gstack",
-      "install": "git clone --single-branch --depth 1 https://github.com/garrytan/gstack.git ~/.claude/skills/gstack",
-      "configDir": "~/.claude/skills/gstack/",
-      "version": "latest"
-    },
-    "karpathy-skills": {
-      "description": "4 behavioral principles embedded in CLAUDE.md",
-      "install": "Already applied — CLAUDE.md ships with this project"
+    {
+      "id": "gstack",
+      "description": "Virtual engineering sprint lifecycle",
+      "installed": true,
+      "source": "https://github.com/garrytan/gstack.git"
     }
-  },
-  "fusionPoints": {
-    "structural_to_semantic": {
-      "from": "codegraph",
-      "to": "understand-anything",
-      "how": "codegraph init -i builds AST base then /understand adds LLM enrichment"
-    },
-    "code_intelligence_for_agents": {
-      "from": "codegraph",
-      "to": "ecc",
-      "how": "ECC agents call codegraph MCP tools instead of grep/glob"
-    },
-    "plan_to_build_to_ship": {
-      "from": "gstack",
-      "via": "ecc",
-      "to": "gstack",
-      "how": "gstack plans, ECC implements, gstack ships"
-    },
-    "behavioral_guardrails": {
-      "from": "karpathy-skills",
-      "to": "all",
-      "how": "4 principles in CLAUDE.md apply to every agent session"
-    }
-  },
-  "pipelineOrder": {
-    "onboarding": ["codegraph", "understand-anything"],
-    "feature": ["gstack:office-hours", "gstack:plan-ceo-review", "gstack:plan-eng-review", "ecc:planner", "ecc:tdd-guide", "ecc:code-reviewer", "gstack:qa", "gstack:ship", "gstack:retro"],
-    "debug": ["gstack:investigate", "codegraph", "understand-anything", "ecc:tdd-guide", "gstack:qa", "gstack:ship"],
-    "review": ["codegraph", "understand-anything", "ecc:code-reviewer", "ecc:security-reviewer", "gstack:review"]
-  },
-  "harnessSupport": [
-    "claude",
-    "codex",
-    "opencode",
-    "cursor",
-    "gemini",
-    "copilot",
-    "zed",
-    "hermes"
-  ]
+  ],
+  "metaOrchestrator": {
+    "available": true,
+    "command": "meta \"<task>\"",
+    "supportedLLMs": [
+      "claude-sonnet",
+      "claude-opus",
+      "gpt-4o",
+      "gemini-pro",
+      "deepseek-v4",
+      "hermes"
+    ],
+    "apiKeyRequired": "not set (run: set OPENROUTER_API_KEY=your_key)"
+  }
 }

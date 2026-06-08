@@ -104,35 +104,24 @@ The `of` CLI connects **CodeGraph**, **Understand-Anything**, **ECC**, **gstack*
 
 ## Quick Install
 
-### One-liner (Unix/Mac)
 ```bash
-curl -fsSL https://raw.githubusercontent.com/hernandez42/omni-fusion/main/install.sh | bash
-```
-
-### One-liner (Windows PowerShell)
-```powershell
-iex ((New-Object System.Net.WebClient).DownloadString('https://raw.githubusercontent.com/hernandez42/omni-fusion/main/install.ps1'))
-```
-
-### Manual install
-```bash
-# 1. Clone
+# One line — detects your machine, auto-selects best tools from GitHub
 git clone https://github.com/hernandez42/omni-fusion.git
 cd omni-fusion
-
-# 2. Install components
-npm install -g @colbymchenry/codegraph                    # CodeGraph
-npm install -g ecc-universal && ecc install --profile developer --target claude  # ECC
-git clone --single-branch --depth 1 https://github.com/garrytan/gstack.git ~/.claude/skills/gstack  # gstack
-
-# 3. Link the CLI
-npm link
-
-# 4. Verify
-of status
+npm run setup
 ```
 
-> **Note:** Understand-Anything is a Claude Code plugin only. Run `/plugin install understand-anything` inside Claude Code.
+That's it. The setup script:
+1. **Detects** your hardware (CPU, RAM, GPU, OS, installed runtimes)
+2. **Selects** the best tools for your environment from 6 categories (code analysis, review, security, agents, workflow, coding) via GitHub search
+3. **Installs** and wires everything together
+4. **Generates** a personalized `fuse.json` manifest — your toolchain is unique to your machine
+
+```bash
+# Then set your API key for real multi-LLM routing
+set OPENROUTER_API_KEY=sk-your-key-here
+meta "analyze my project"
+```
 
 ---
 

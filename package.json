@@ -2,20 +2,20 @@
   "name": "omni-fusion",
   "version": "1.0.0",
   "private": true,
-  "description": "Universal AI Agent Integration Layer — Co-installs CodeGraph + Understand-Anything + ECC + gstack + Karpathy Skills into one orchestrated system",
+  "description": "Self-evolving multi-LLM meta-orchestrator. Detects your environment → auto-selects best tools from GitHub → wires them together.",
   "bin": {
     "of": "bin/of.js",
     "meta": "meta/meta-orchestrator.js"
   },
   "scripts": {
-    "setup": "node scripts/co-install.js --all",
+    "setup": "node scripts/co-install.js",
     "status": "node scripts/check-install.js",
     "build-docs": "node scripts/build-docs.js",
     "of": "node bin/of.js",
     "review": "node bin/of.js review",
     "understand": "node bin/of.js understand",
     "plan": "node bin/of.js plan",
-    "lint": "node --check bin/of.js && node --check lib/codegraph.js && node --check lib/ecc.js && node --check lib/gstack.js && node --check scripts/co-install.js && node --check scripts/check-install.js && node --check scripts/build-docs.js && node --check scripts/ci-shell-check.js && node --check scripts/self-optimize.js",
+    "lint": "node --check bin/of.js && node --check lib/codegraph.js && node --check lib/ecc.js && node --check lib/gstack.js && node --check lib/env-detect.js && node --check lib/github-select.js && node --check meta/meta-orchestrator.js && node --check scripts/co-install.js && node --check scripts/check-install.js && node --check scripts/build-docs.js && node --check scripts/ci-shell-check.js && node --check scripts/self-optimize.js && node --check scripts/self-heal-ci.js && node --check scripts/apex-init.js && node --check scripts/asi-audit.js",
     "test": "node scripts/check-install.js && npm run build-docs",
     "ci": "npm run lint && npm run test",
     "optimize": "node scripts/self-optimize.js",
