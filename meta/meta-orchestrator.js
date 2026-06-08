@@ -178,23 +178,79 @@ class TaskExecutor {
     print(`  ${DIM}  Model: ${modelKey} | Intent: ${selection.intent} | Complexity: ${selection.complexity}${RESET}`);
     print(`  ${DIM}  Reason: ${selection.reason}${RESET}`);
 
-    // Can't actually call external APIs from this environment,
-    // but the architecture is complete. In production, this would
-    // make an HTTP call to OpenRouter or direct provider API.
-    print(`  ${YELLOW}⚠${RESET} External LLM call would go here (OpenRouter/provider API)`);
-    print(`  ${DIM}  POST https://openrouter.ai/api/v1/chat/completions${RESET}`);
-    print(`  ${DIM}  Model: ${modelKey}${RESET}`);
-    print(`  ${DIM}  Messages: [system prompt + user task]${RESET}`);
+    const apiKey = process.env.OPENROUTER_API_KEY || process.env.OPENAI_API_KEY;
+    const baseUrl = process.env.OPENROUTER_API_KEY
+      ? 'https://openrouter.ai/api/v1'
+      : 'https://api.openai.com/v1';
 
-    // Record the routing decision
-    this.router.recordCall(task, modelKey, selection.intent, 'simulated', 'success');
+    // Map our internal model names to provider model IDs
+    const MODEL_MAP = {
+      'claude-sonnet':    'anthropic/claude-3.5-sonnet',
+      'claude-opus':      'anthropic/claude-3-opus',
+      'gpt-4o':           'openai/gpt-4o',
+      'gemini-pro':       'google/gemini-pro',
+      'deepseek-v4':      'deepseek/deepseek-chat',
+      'hermes':           'nousresearch/hermes-2-pro',
+    };
+    const apiModel = MODEL_MAP[modelKey] || modelKey;
+
+    if (!apiKey) {
+      print(`  ${YELLOW}⚠${RESET} No API key found. Set OPENROUTER_API_KEY for real LLM calls.`);
+      print(`  ${DIM}  To enable: set OPENROUTER_API_KEY=your_key_here${RESET}`);
+      print(`  ${DIM}  Routing decision saved to ~/.apex/ for later execution${RESET}`);
+      this.router.recordCall(task, modelKey, selection.intent, 'no-api-key', 'deferred');
+      return {
+        model: modelKey, intent: selection.intent, complexity: selection.complexity,
+        status: 'deferred', result: 'No API key configured. Set OPENROUTER_API_KEY to execute.',
+      };
+    }
+
+    // Real API call via HTTPS
+    const https = require('https');
+    const systemPrompt = `You are a ${selection.intent} specialist. Solve the task with precision.`;
+    const body = JSON.stringify({
+      model: apiModel,
+      messages: [
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: task },
+      ],
+      max_tokens: options.maxTokens || 4096,
+      temperature: options.temperature || 0.3,
+    });
+
+    const response = await new Promise((resolve, reject) => {
+      const url = new URL(baseUrl + '/chat/completions');
+      const req = https.request(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${apiKey}`,
+          ...(process.env.OPENROUTER_API_KEY ? { 'HTTP-Referer': 'https://github.com/hernandez42/omni-fusion' } : {}),
+        },
+      }, (res) => {
+        let data = '';
+        res.on('data', (chunk) => data += chunk);
+        res.on('end', () => {
+          try { resolve(JSON.parse(data)); }
+          catch { reject(new Error(`API returned non-JSON: ${data.slice(0, 200)}`)); }
+        });
+      });
+      req.on('error', reject);
+      req.write(body);
+      req.end();
+    });
+
+    const output = response?.choices?.[0]?.message?.content || 'No response from API';
+    this.router.recordCall(task, modelKey, selection.intent, 'completed', 'success');
+    print(`  ${GREEN}✓${RESET} LLM response received (${output.length} chars)`);
 
     return {
       model: modelKey,
       intent: selection.intent,
       complexity: selection.complexity,
-      status: 'dispatched',
-      result: '(simulated — real API call would go here)'
+      status: 'completed',
+      result: output,
+      usage: response?.usage || {},
     };
   }
 }

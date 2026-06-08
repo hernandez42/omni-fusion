@@ -175,7 +175,7 @@ async function main() {
     metrics.lastUpdated = ts.split('T')[0];
     writeApex('state/METRICS.json', JSON.stringify(metrics, null, 2));
     ok(`METRICS.json updated`);
-  } catch {}
+  } catch (e) { warn(`Metrics update failed: ${e.message}`); }
 
   print(`\n${DIM}Self-heal cycle complete.${RESET}\n`);
 }

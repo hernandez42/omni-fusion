@@ -79,7 +79,14 @@ function findIssues(files) {
     if (!content) { warn(`${f}: could not read`); continue; }
     const lines = content.split('\n');
     lines.forEach((l, i) => {
-      if (/TODO|FIXME|HACK|XXX/.test(l) && !l.trim().startsWith('//') && !l.trim().startsWith('#')) {
+      // Exclude self-referential matches (scanner's own regex, search queries, suggestion messages)
+      if (/TODO|FIXME|HACK|XXX/.test(l)
+          && !l.trim().startsWith('//')
+          && !l.trim().startsWith('#')
+          && !l.includes('/TODO|FIXME|HACK|XXX/')  // regex literal in scanner itself
+          && !l.includes('automated TODO tracking') // search query
+          && !l.includes('Stale TODOs')             // suggestion text
+          && !l.includes('stale-todo')) {           // type tag
         issues.push({ file: f, line: i + 1, severity: 'medium', type: 'stale-todo', text: l.trim().slice(0, 80) });
       }
     });
@@ -254,7 +261,7 @@ async function main() {
   try {
     const existing = JSON.parse(readApex('state/METRICS.json') || '{}');
     if (existing.omniFusion) metrics = { ...existing, omniFusion: { ...existing.omniFusion, ldr: { ...existing.omniFusion.ldr, cyclesComplete: sess, gapsFound: issues.length, lastCycle: ts }, codeQuality: { ...existing.omniFusion.codeQuality, issuesOpen: issues.length } }, sessions: sess, lastUpdated: ts, health: issues.length === 0 ? 'T2 STABLE' : 'T1 BOOTSTRAP' };
-  } catch {}
+  } catch (e) { warn(`Metrics update failed: ${e.message}`); }
   writeApex('state/METRICS.json', JSON.stringify(metrics, null, 2));
   ok(`METRICS.json updated (health: ${metrics.health})`);
 
